@@ -7,32 +7,27 @@
       <el-table-column prop="amount2" label="数值 2（元）"> </el-table-column>
       <el-table-column prop="amount3" label="数值 3（元）"> </el-table-column>
     </el-table>
-    <div style="height:15px; width:100%; color:#999">~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~</div>
-    <div class="loading">简单loading效果</div>
-    <div style="height:15px; width:100%; color:#999">~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~</div>
-    <div class="wrap">
-      <div class="ribbon">
-        <a href="#">Fork me on GitHub</a>
-      </div>
-    </div>
-    <div style="height:15px; width:100%; color:#999">~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~</div>
-    <input type="text" placeholder="我的默认样式"/>
-    <div style="height:15px; width:100%; color:#999">~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~</div>
-    <div class="firstxia"> 首字下沉 要实现类似 word 中首字下沉的效果可以使用以下代码 </div>
-    <div style="height:15px; width:100%; color:#999">~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~</div>
-    <div class="triangle"></div>
-    <div class="triangle top"></div>
-    <div class="triangle bottom "></div>
-    <div class="triangle right"></div>
-    <div class="triangle left"></div>
-    <div style="height:15px; width:100%; color:#999">~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~</div>   
-    <div class="plus"></div>
-    <div class="target"></div>
-    <div style="height:15px; width:100%; color:#999">~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~</div>   
-    <div class="gradient"></div>
-    <div class="cup"></div>
-    <div class="moon"></div>
-    <div class="heart"></div>
+    
+    <el-button @click="resetDateFilter">清除日期过滤器</el-button>
+    <el-button @click="clearFilter">清除所有过滤器</el-button>
+
+    <el-table ref="filterTable" :data="tableData2.slice((currentPage-1)*pagesize,currentPage*pagesize)" style="width: 100%">
+      <el-table-column prop="date" label="日期" sortable width="180"  column-key="date"
+        :filters="[{text: '2016-05-01', value: '2016-05-01'}, {text: '2016-05-02', value: '2016-05-02'}, {text: '2016-05-03', value: '2016-05-03'}, {text: '2016-05-04', value: '2016-05-04'}]"
+        :filter-method="filterHandler" > </el-table-column>
+      <el-table-column prop="name" label="姓名" width="180">  </el-table-column>
+      <el-table-column prop="address" label="地址" :formatter="formatter">  </el-table-column>
+      <el-table-column prop="tag" label="标签" width="100" :filters="[{ text: '家', value: '家' }, { text: '公司', value: '公司' }]" :filter-method="filterTag" filter-placement="bottom-end">
+        <template slot-scope="scope">
+          <el-tag :type="scope.row.tag === '家' ? 'primary' : 'success'" disable-transitions>{{scope.row.tag}}</el-tag>
+        </template>
+      </el-table-column>
+    </el-table>
+
+    <el-pagination @size-change="handleSizeChange" @current-change="handleCurrentChange" :current-page="currentPage"
+      :page-size="pagesize" layout="total, prev, pager, next, jumper" :total="tableData2.length">
+    </el-pagination>
+
   </div>
 </template>
 <script>
@@ -40,7 +35,10 @@ export default {
   name: 'table11',
   data() {
     return {
-        tableData: [{
+        pagesize:3,
+        currentPage:1,
+        tableData: [
+          {
           id: '12987122',  name: '王小虎',  amount1: '10%', amount2: '3.2', amount3: 10
         }, {
           id: '12987123',  name: '王小虎',  amount1: '20%', amount2: '4.43',  amount3: -1.2
@@ -53,11 +51,57 @@ export default {
         // }, {
         //   id: '12987126',  name: '王小虎', amount1: '539',  amount2: '4.1', amount3: 15
         // }
-        ]
+        ],
+         tableData2: [{
+          date: '2016-05-02',
+          name: '王小虎',
+          address: '上海市普陀区金沙江路 1518 弄',
+          tag: '家'
+        }, {
+          date: '2016-05-04',
+          name: '王小虎',
+          address: '上海市普陀区金沙江路 1517 弄',
+          tag: '公司'
+        }, {
+          date: '2016-05-01',
+          name: '王小虎',
+          address: '上海市普陀区金沙江路 1519 弄',
+          tag: '家'
+        }, {
+          date: '2016-05-03',
+          name: '王小虎',
+          address: '上海市普陀区金沙江路 1516 弄',
+          tag: '公司'
+        }]
       };
   },
   created() {},
   methods: {
+    handleSizeChange(val) {
+      console.log(`每页 ${val} 条`);
+    },
+    handleCurrentChange(val) {
+      this.currentPage = val;
+      console.log(`当前页: ${val}`);
+    },
+
+    resetDateFilter() {
+      this.$refs.filterTable.clearFilter('date');
+    },
+    clearFilter() {
+      this.$refs.filterTable.clearFilter();
+    },
+    formatter(row, column) {
+      return row.address;
+    },
+    filterTag(value, row) {
+      return row.tag === value;
+    },
+    filterHandler(value, row, column) {
+      const property = column['property'];
+      return row[property] === value;
+    },
+
     handelChange(date) {
       console.log(date.format('YY-MM-DD'));
     },
@@ -150,193 +194,4 @@ export default {
   }
 }
 </script>
-<style scoped>
-.loading{
-  font-size: 20px;
-}
-.loading:after {
-  display: inline-block;
-  overflow: hidden;
-  vertical-align: bottom;
-  content: "\2026";
-  -webkit-animation: ellipsis 2s infinite;
-}
-/* 动画部分 */
-@-webkit-keyframes ellipsis {
-  from {
-    width: 2px;
-  }
-  to {
-    width: 25px;
-  }
-}
-
-/* 外层容器几本设置  */
-.wrap {
-  width: 160px;
-  height: 160px;
-  overflow: hidden;
-  position: relative;
-  background-color: #f3f3f3;
-}
-.ribbon {
-  background-color: #a00;
-  overflow: hidden;
-  white-space: nowrap;
-  position: absolute;
-  /* shadom */
-  -webkit-box-shadow: 0 0 10px #888;
-  -moz-box-shadow: 0 0 10px #888;
-  box-shadow: 0 0 10px #888;
-  /* rotate */
-  -webkit-transform: rotate(-45deg);
-  -moz-transform: rotate(-45deg);
-  -ms-transform: rotate(-45deg);
-  -o-transform: rotate(-45deg);
-  transform: rotate(-45deg);
-  /* position */
-  left: -50px;
-  top: 40px;
-}
-.ribbon a {
-  border: 1px solid #faa;
-  color: #fff;
-  display: block;
-  font: bold 81.25% "Helvetica Neue", Helvetica, Arial, sans-serif;
-  margin: 1px 0;
-  padding: 10px 50px;
-  text-align: center;
-  text-decoration: none;
-  /* shadow */
-  text-shadow: 0 0 5px #444;
-}
-
-input::-webkit-input-placeholder {
-  color: green;
-  background-color: #f9f7f7;
-  font-size: 14px;
-}
-input::-moz-input-placeholder {
-  color: green;
-  background-color: #f9f7f7;
-  font-size: 14px;
-}
-input::-ms-input-placeholder {
-  color: green;
-  background-color: #f9f7f7;
-  font-size: 14px;
-}
-
-.firstxia:first-letter {
-  float: left;
-  color: green;
-  font-size: 20px;
-}
-
-.triangle {
-  /* 基础样式 */
-  border: solid 10px transparent;
-}
-/*下*/
-.triangle.bottom {
-  border-top-color: green;
-}
-/*上*/
-.triangle.top {
-  border-bottom-color: green;
-}
-/*左*/
-.triangle.right {
-  border-right-color: green;
-}
-/*右*/
-.triangle.left {
-  border-left-color: green;
-}
-
-.plus {
-  width: 30px;
-  height: 30px;
-  margin-left: 50px; /*由于box-shadow不占空间，常常需要添加margin来校正位置*/
-  background: #000;
-  box-shadow: 0 -30px 0 red, 0 30px 0 red, -30px 0 0 red, 30px 0 0 red;
-}
-.target {
-  width: 30px;
-  height: 30px;
-  background: #dddddd;
-  border-radius: 50%;
-  margin-left: 50px;
-  box-shadow: 0 0 0 5px #ff1, 0 0 0 20px red, 0 0 0 30px rgb(223, 223, 151), 0 0 0 40px red;
-}
-
-.gradient {
-  position: relative; display: inline-block;
-  width: 200px;
-  height: 200px;
-  border-radius: 50%;
-  background-color: #33ddb3;
-  background-image: linear-gradient(335deg, rgb(241, 151, 151) 23px, transparent 23px),
-    linear-gradient(155deg, #ee0 23px, transparent 23px), 
-    linear-gradient(335deg, #b00 23px, transparent 23px ), 
-    linear-gradient(155deg, #d00 23px, transparent 23px);
-  background-size: 58px 58px;
-  background-position: 0px 2px, 4px 35px, 29px 31px, 34px 6px;
-}
-.moon {
-  display: inline-block;
-  height: 1.5em;
-  width: 1.5em;
-  box-shadow: inset -0.4em 0 0;
-  border-radius: 2em;
-  transform: rotate(20deg);
-}
-.cup {
-  display: inline-block; position: relative;
-  width: 1.5em;
-  height: 1.5em;
-  border: 0.25em solid;
-  border-bottom: 1.1em solid;
-  border-radius: 0 0 0.25em 0.25em;
-}
-.cup:before {
-  position: absolute;
-  right: -0.6em;
-  top: 0;
-  width: 0.3em;
-  height: 0.8em;
-  border: 0.25em solid;
-  border-left: none;
-  border-radius: 0 0.5em 0.5em 0;
-  content: "";
-}
-.heart {
-  display: inline-block;
-  margin-top: 1.5em; margin-left: 1.5em;
-  width: 50px;
-  height: 50px;
-  border-radius: 50% 50% 0 0;
-  background: green; position: relative;
-}
-.heart:before,
-.heart:after {
-  position: absolute;
-  width: 1em;
-  height: 1.6em;
-  background: green;
-  border-radius: 50% 50% 0 0;
-  content: ""; opacity: 0.8;
-  top: 0;
-}
-.heart:before {
-  -webkit-transform: rotate(45deg);
-  -webkit-transform-origin: 100% 100%;
-  right: 0;
-}
-.heart:after {
-  -webkit-transform: rotate(-45deg);
-  -webkit-transform-origin: 0 100%;
-  left: 0;
-}
-
-</style>
+<style scoped></style>
